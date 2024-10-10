@@ -1,7 +1,6 @@
 from app import app, db
 from server.models import Customer, Item, Review
 
-
 class TestReview:
     '''Review model in models.py'''
 
@@ -20,9 +19,18 @@ class TestReview:
         '''can be added to a transaction and committed to review table with comment column.'''
         with app.app_context():
             assert 'comment' in Review.__table__.columns
-            r = Review(comment='great!')
+
+            # Create and save a Customer and Item instance
+            customer = Customer(name='John Doe')
+            item = Item(name='Sample Item', price=10.99)
+            db.session.add_all([customer, item])
+            db.session.commit()  # Commit to get IDs
+
+            # Now create a Review linked to the customer and item
+            r = Review(comment='great!', customer_id=customer.id, item_id=item.id)
             db.session.add(r)
             db.session.commit()
+
             assert hasattr(r, 'id')
             assert db.session.query(Review).filter_by(id=r.id).first()
 
@@ -32,20 +40,22 @@ class TestReview:
             assert 'customer_id' in Review.__table__.columns
             assert 'item_id' in Review.__table__.columns
 
-            c = Customer()
-            i = Item()
-            db.session.add_all([c, i])
+            # Create Customer and Item instances
+            customer = Customer(name='Jane Doe')
+            item = Item(name='Sample Item', price=9.99)
+            db.session.add_all([customer, item])
             db.session.commit()
 
-            r = Review(comment='great!', customer=c, item=i)
+            # Create a Review linked to the customer and item
+            r = Review(comment='great!', customer=customer, item=item)
             db.session.add(r)
             db.session.commit()
 
-            # check foreign keys
-            assert r.customer_id == c.id
-            assert r.item_id == i.id
-            # check relationships
-            assert r.customer == c
-            assert r.item == i
-            assert r in c.reviews
-            assert r in i.reviews
+            # Check foreign keys
+            assert r.customer_id == customer.id
+            assert r.item_id == item.id
+            # Check relationships
+            assert r.customer == customer
+            assert r.item == item
+            assert r in customer.reviews
+            assert r in item.reviews

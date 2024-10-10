@@ -11,9 +11,17 @@ class TestSerialization:
             c = Customer(name='Phil')
             db.session.add(c)
             db.session.commit()
-            r = Review(comment='great!', customer=c)
+            
+            # Create an item before creating the review
+            i = Item(name='Insulated Mug', price=9.99)
+            db.session.add(i)
+            db.session.commit()
+
+            # Now create the review with both customer and item
+            r = Review(comment='great!', customer=c, item=i)
             db.session.add(r)
             db.session.commit()
+
             customer_dict = c.to_dict()
 
             assert customer_dict['id']
@@ -27,7 +35,14 @@ class TestSerialization:
             i = Item(name='Insulated Mug', price=9.99)
             db.session.add(i)
             db.session.commit()
-            r = Review(comment='great!', item=i)
+
+            # Create a customer before creating the review
+            c = Customer(name='Phil')
+            db.session.add(c)
+            db.session.commit()
+
+            # Now create the review with both item and customer
+            r = Review(comment='great!', item=i, customer=c)
             db.session.add(r)
             db.session.commit()
 
@@ -41,11 +56,12 @@ class TestSerialization:
     def test_review_is_serializable(self):
         '''review is serializable'''
         with app.app_context():
-            c = Customer()
-            i = Item()
+            c = Customer(name='Phil')  # Provide a name for the customer
+            i = Item(name='Insulated Mug', price=9.99)  # Provide details for the item
             db.session.add_all([c, i])
             db.session.commit()
 
+            # Now create the review with both customer and item
             r = Review(comment='great!', customer=c, item=i)
             db.session.add(r)
             db.session.commit()

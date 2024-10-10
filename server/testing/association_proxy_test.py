@@ -8,8 +8,8 @@ class TestAssociationProxy:
     def test_has_association_proxy(self):
         '''has association proxy to items'''
         with app.app_context():
-            c = Customer()
-            i = Item()
+            c = Customer(name='Phil')  # Provide a name for the customer
+            i = Item(name='Insulated Mug', price=9.99)  # Provide details for the item
             db.session.add_all([c, i])
             db.session.commit()
 
@@ -18,4 +18,4 @@ class TestAssociationProxy:
             db.session.commit()
 
             assert hasattr(c, 'items')
-            assert i in c.items
+            assert i in c.items  # This should now work
